@@ -1,11 +1,4 @@
 {
-  "idf.currentSetup": "C:\\esp\\v5.5.4\\esp-idf",
-  "clangd.path": "C:\\Espressif\\tools\\esp-clang\\esp-20.1.1_20250829\\esp-clang\\bin\\clangd.exe",
-  "clangd.arguments": [
-    "--background-index",
-    "--query-driver=**",
-    "--compile-commands-dir=c:\\Users\\gabri\\Desktop\\privacy-shield\\build"
-  ],
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
   ]

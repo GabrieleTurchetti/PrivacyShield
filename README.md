@@ -193,5 +193,6 @@ privacy-shield/
     │
     └── web_dashboard/          # Sprint 4: Prepared for the Hub node
         ├── CMakeLists.txt
+        ├── include/web_dashboard.h
         ├── web_server.c        
         └── web_api.c

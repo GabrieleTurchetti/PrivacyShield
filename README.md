@@ -156,3 +156,46 @@ The DNG-2300 generator is a commercial unit created to protect against listening
 ---
 
 For a detailed breakdown of each sprint task, see [SPRINT_PLAN.md](SPRINT_PLAN.md).
+
+## Project Structure
+```text
+privacy-shield/
+│
+├── CMakeLists.txt              # Global build configuration
+├── sdkconfig.defaults          # Here we force 8MB PSRAM and ESP32-S3 configs
+│
+├── main/
+│   ├── CMakeLists.txt          # Tells the compiler which components to load in main
+│   ├── main.c                  # The entry point (app_main)
+│   └── include/
+│       └── global_config.h     # Pins defined here (e.g., PIN_I2S_BCLK, PIN_AMP_DOUT)
+│
+└── components/
+    │
+    ├── audio_hal/              # (Hardware Abstraction Layer)
+    │   ├── CMakeLists.txt
+    │   ├── include/audio_hal.h
+    │   ├── i2s_mic.c           # Task 1.2: I2S driver to capture audio
+    │   └── max_amp.c           # Task 1.3: Driver for the DAEX25 transducer
+    │
+    ├── mesh_core/              
+    │   ├── CMakeLists.txt
+    │   ├── include/mesh_core.h
+    │   ├── esp_now_link.c      # Task 1.4: Basic ESP-NOW communication
+    │   └── node_discovery.c    # Task 1.5: Neighbor list management
+    │
+    ├── dsp_engine/             
+    │   ├── CMakeLists.txt
+    │   ├── include/dsp_engine.h
+    │   ├── vad.c               # Sprint 2: Voice Activity Detection (VAD)
+    │   ├── noise_gen.c         # Sprint 2: Pink/Brown noise generation
+    │   └── aec_filter.c        # Sprint 3: Acoustic echo cancellation
+    │
+    └── web_dashboard/          # Sprint 4: Prepared for the Hub node
+        ├── CMakeLists.txt
+        ├── include/web_dashboard.h
+        ├── web_server.c        
+        └── web_api.c
+
+
+

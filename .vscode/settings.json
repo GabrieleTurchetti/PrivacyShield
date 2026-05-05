@@ -10,5 +10,6 @@
   },
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
-  ]
+  ],
+  "idf.flashType": "UART"
 }

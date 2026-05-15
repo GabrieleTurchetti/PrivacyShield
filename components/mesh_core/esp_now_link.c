@@ -105,7 +105,7 @@ esp_err_t mesh_init(uint8_t node_id) {
     ESP_ERROR_CHECK(esp_now_init());
 
     /* 3. Register callbacks */
-    ESP_ERROR_CHECK(esp_now_register_send_cb(espnow_send_cb));
+    ESP_ERROR_CHECK(esp_now_register_send_cb_v2(espnow_send_cb));
     ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
 
     /* 4. Add broadcast peer (so we can send broadcast packets) */
@@ -150,7 +150,7 @@ esp_err_t mesh_send_hello(void) {
     mesh_hello_pkt_t pkt = {0};
     pkt.header.type        = MESH_PKT_HELLO;
     pkt.header.src_id      = s_mesh.my_id;
-    pkt.header.timestamp_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+    pkt.header.timestamp_ms = pdTICKS_TO_MS(xTaskGetTickCount());
 
     ESP_LOGD(TAG, "Sending HELLO (node %u)", s_mesh.my_id);
     return mesh_broadcast(&pkt, sizeof(pkt));

@@ -2,9 +2,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "esp_event.h"
-#include "esp_netif.h"
-#include "esp_mac.h"
 #include "mesh_core.h"
 
 static const char *TAG = "discovery";
@@ -69,7 +66,7 @@ void mesh_discovery_heard(const uint8_t *mac, uint8_t node_id) {
 /* -------------------------------------------------------------------------- */
 
 void mesh_discovery_prune(void) {
-    uint32_t now = xTaskGetTickCount() * portTICK_PERIOD_MS;
+    uint32_t now = pdTICKS_TO_MS(xTaskGetTickCount());
 
     for (int i = 0; i < MESH_MAX_NEIGHBORS; i++) {
         if (!s_mesh.neighbors[i].active) continue;

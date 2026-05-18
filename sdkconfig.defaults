@@ -11,3 +11,6 @@ CONFIG_SPIRAM_RODATA=y
 
 # Set FreeRTOS tick rate to 1000Hz (1 tick = 1ms) to handle audio without delays
 CONFIG_FREERTOS_HZ=1000
+
+# Debug mode: dump raw audio over serial (disable for production)
+CONFIG_PRIVACY_SHIELD_DEBUG_MODE=y

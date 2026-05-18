@@ -4,25 +4,20 @@
 #include "driver/i2s_std.h"
 #include "esp_log.h"
 #include "driver/uart.h"
+#include "global_config.h"
+#include "sdkconfig.h"
 #include "esp_timer.h"
-
-// Pin configuration
-#define I2S_WS_PIN    4  
-#define I2S_DOUT_PIN  5  
-#define I2S_BCLK_PIN  6
-
-#define TEST_MIC false
 
 static const char *TAG = "AUDIO_HAL_MIC";
 static i2s_chan_handle_t rx_handle;
 
-// Assume you created this queue in main.c to connect the Mic to the AI
 extern QueueHandle_t audio_ai_queue;
 
 void audio_hal_mic_init(void) {
-    // Boost USB baud rate for high data throughput
-    // TODO: Disable this for testing underruns
+#ifdef CONFIG_PRIVACY_SHIELD_DEBUG_MODE
+    // Boost USB baud rate for raw sample streaming
     uart_set_baudrate(UART_NUM_0, 2000000);
+#endif
     
     ESP_LOGI(TAG, "Initializing I2S microphone hardware...");
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
@@ -34,10 +29,10 @@ void audio_hal_mic_init(void) {
         .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_MONO),
         .gpio_cfg = {
             .mclk = -1,             
-            .bclk = I2S_BCLK_PIN,
-            .ws   = I2S_WS_PIN,
+            .bclk = PIN_I2S_MIC_BCLK,
+            .ws   = PIN_I2S_MIC_LRCLK,
             .dout = -1,             
-            .din  = I2S_DOUT_PIN,   
+            .din  = PIN_I2S_MIC_DIN,   
             .invert_flags = {
                 .mclk_inv = false,
                 .bclk_inv = false,
@@ -95,7 +90,7 @@ void audio_hal_mic_read_task(void *pvParameters) {
             // DC offset calibration phase
             if (!is_calibrated) {
                 for (int i = 0; i < samples_read; i++) {
-                    calibration_sum += (raw_samples[i] >> 14);
+                    calibration_sum += (raw_samples[i] >> 16);
                     calibration_samples_read++;
                 }
                 
@@ -104,18 +99,16 @@ void audio_hal_mic_read_task(void *pvParameters) {
                     dc_offset = calibration_sum / calibration_samples_read;
                     is_calibrated = true;
                     ESP_LOGI(TAG, "Calibration complete! DC Offset: %ld", dc_offset);
-                    printf("START_DATA\n"); 
                 }
             } 
             // Audio streaming phase
             else {
-                if (TEST_MIC) {
+                #ifdef CONFIG_PRIVACY_SHIELD_DEBUG_MODE
                     for (int i = 0; i < samples_read; i++) {
                         // Apply offset correction and print to serial
-                        printf("%ld\n", (raw_samples[i] >> 14) - dc_offset);
+                        printf("%ld\n", (raw_samples[i] >> 16) - dc_offset);
                     }
-                }
-                else {
+                #else
                     // Convert 32-bit I2S data to 16-bit standard audio for the AI
                     for (int i = 0; i < samples_read; i++) {
                         // Shift down to 16-bit
@@ -126,7 +119,7 @@ void audio_hal_mic_read_task(void *pvParameters) {
                     if (audio_ai_queue != NULL) {
                         xQueueSend(audio_ai_queue, &ai_buffer, 0);
                     }
-                }
+                #endif
             }
         }
     }

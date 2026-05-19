@@ -2,6 +2,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "sdkconfig.h"
 #include "global_config.h"
 #include "mesh_core.h"
 #include "esp_mac.h"
@@ -10,7 +11,37 @@
 static const char *TAG = "main";
 
 /* -------------------------------------------------------------------------- */
-/*  Hello task — broadcast our presence every 5 seconds                       */
+/*  Log level setup — see Kconfig.projbuild for per-subsystem toggles          */
+/* -------------------------------------------------------------------------- */
+
+static void log_levels_init(void) {
+    /* Set global default to INFO — clean base level */
+    esp_log_level_set("*", ESP_LOG_INFO);
+
+    /* Mesh subsystem */
+#ifdef CONFIG_PRIVACY_SHIELD_LOG_MESH
+    esp_log_level_set("mesh_core", ESP_LOG_DEBUG);
+    esp_log_level_set("discovery", ESP_LOG_DEBUG);
+#else
+    esp_log_level_set("mesh_core", ESP_LOG_INFO);
+    esp_log_level_set("discovery", ESP_LOG_WARN);
+#endif
+
+    /* Audio subsystem */
+#ifdef CONFIG_PRIVACY_SHIELD_LOG_AUDIO
+    esp_log_level_set("AUDIO_HAL_MIC", ESP_LOG_DEBUG);
+#else
+    esp_log_level_set("AUDIO_HAL_MIC", ESP_LOG_WARN);
+#endif
+
+    /* Main always at INFO */
+    esp_log_level_set("main", ESP_LOG_INFO);
+
+    ESP_LOGI(TAG, "Log levels initialized");
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Hello task — broadcast our presence every 10 seconds                      */
 /* -------------------------------------------------------------------------- */
 
 static void hello_task(void *arg) {
@@ -80,6 +111,8 @@ static void on_mesh_packet(const uint8_t *src_mac, const void *data, size_t len)
 /* -------------------------------------------------------------------------- */
 
 void app_main(void) {
+    log_levels_init();
+
     ESP_LOGI(TAG, "======================================");
     ESP_LOGI(TAG, "  Privacy Shield — Node %u", DEFAULT_NODE_ID);
     ESP_LOGI(TAG, "======================================");

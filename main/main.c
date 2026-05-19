@@ -15,6 +15,13 @@ static const char *TAG = "main";
 /* -------------------------------------------------------------------------- */
 
 static void log_levels_init(void) {
+    
+#ifdef CONFIG_PRIVACY_SHIELD_BUILD_PRODUCTION
+    /* Production: everything quiet */
+    esp_log_level_set("*", ESP_LOG_WARN);
+    return;
+#endif
+
     /* Set global default to INFO — clean base level */
     esp_log_level_set("*", ESP_LOG_INFO);
 
@@ -23,7 +30,7 @@ static void log_levels_init(void) {
     esp_log_level_set("mesh_core", ESP_LOG_DEBUG);
     esp_log_level_set("discovery", ESP_LOG_DEBUG);
 #else
-    esp_log_level_set("mesh_core", ESP_LOG_INFO);
+    esp_log_level_set("mesh_core", ESP_LOG_WARN);
     esp_log_level_set("discovery", ESP_LOG_WARN);
 #endif
 
@@ -116,7 +123,7 @@ void app_main(void) {
     ESP_LOGI(TAG, "======================================");
     ESP_LOGI(TAG, "  Privacy Shield — Node %u", DEFAULT_NODE_ID);
     ESP_LOGI(TAG, "======================================");
-
+    vTaskDelay(pdMS_TO_TICKS(500));
     /* ---- Mesh (ESP-NOW) ---- */
     ESP_ERROR_CHECK(mesh_init(DEFAULT_NODE_ID));
     mesh_register_recv_callback(on_mesh_packet);
@@ -125,7 +132,7 @@ void app_main(void) {
 
     /* ---- Audio (I2S Microphone) ---- */
     audio_hal_mic_init();
-    xTaskCreatePinnedToCore(audio_hal_mic_read_task, "Mic_Task", 4096, NULL, 5, NULL, 1);
+    xTaskCreatePinnedToCore(audio_hal_mic_read_task, "Mic_Task", 8192, NULL, 5, NULL, 1);
 
     ESP_LOGI(TAG, "System ready.");
 }

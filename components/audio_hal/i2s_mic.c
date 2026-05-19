@@ -5,9 +5,10 @@
 #include "esp_log.h"
 #include "driver/uart.h"
 #include "global_config.h"
+#include "log_tags.h"
 #include "sdkconfig.h"
 
-static const char *TAG = "AUDIO_HAL_MIC";
+static const char *TAG = LOG_TAG_AUDIO_MIC;
 static i2s_chan_handle_t rx_handle;
 
 void audio_hal_mic_init(void) {
@@ -80,7 +81,7 @@ void audio_hal_mic_read_task(void *pvParameters) {
 #ifdef CONFIG_PRIVACY_SHIELD_DEBUG_MODE
                 for (int i = 0; i < samples_read; i++) {
                     // Apply offset correction and print to serial
-                    printf("%ld\n", (raw_samples[i] >> 16) - dc_offset);
+                    //printf("%ld\n", (raw_samples[i] >> 16) - dc_offset);
                 }
 #else
                 // Convert 32-bit I2S data to 16-bit standard audio for the AI
